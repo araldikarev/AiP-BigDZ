@@ -5,20 +5,22 @@ import math
 
 class Sphere(Vector):
     def __init__(self, vector: Vector):
-        super().__init__(vector.values, vector.start_point.values if not vector.is_radius_vector() else None)
+        super().__init__(vector.end_point.values, vector.start_point.values if not vector.is_radius_vector() else None)
 
     #region Проверки на содержание
     def contains(self, point: Point):
         # Возможно сделать проверку на мерность? или не стоит?
 
-        if Vector.from_point(point.point).length <= self.radius:
+        distance = Vector.from_points(point, self.start_point).length
+        
+        if distance < self.radius or math.isclose(distance, self.radius, abs_tol=1e-9):
             return True
         return False
     
     def on_sphere(self, point: Point):
         # Возможно сделать проверку на мерность? или не стоит?
-
-        if Vector.from_point(point.point).length == self.radius:
+        distance = Vector.from_points(point, self.start_point).length
+        if math.isclose(distance, self.radius, abs_tol=1e-9):
             return True
         return False
     #endregion
@@ -26,7 +28,7 @@ class Sphere(Vector):
     #region Свойства сферы
     @property
     def radius(self) -> float:
-        return self.length
+        return Vector.abs(self)
 
     def area(self) -> float:
         """Площадь сферы"""
@@ -69,17 +71,17 @@ class Sphere(Vector):
 
     #region Дополнительные операции
     def __str__(self):
-        return f"Sphere({", ".join(map(str, self.values))})"
+        return f"Sphere[{self.dimension}](start_point={self.start_point}, radius={self.radius})"
     #endregion
 
     #region CLS-методы
     @classmethod
     def from_values(cls, end_values: List[float], start_values: List[float] = None) -> "Sphere":
-        return cls(end_values, start_values if start_values != None else [0.0] * len(end_values))
+        return cls(Vector(end_values, start_values))
 
     @classmethod
     def from_points(cls, end_point: Point, start_point: Point) -> "Sphere":
-        return cls(Vector(start_point.values, end_point.values))
+        return cls(Vector(end_point.values, start_point.values))
     
     @classmethod
     def from_length(cls, length: float, dimension: int) -> "Sphere":

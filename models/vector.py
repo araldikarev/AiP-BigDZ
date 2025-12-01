@@ -1,10 +1,11 @@
 ﻿from models.point import Point
 from models.exceptions import DimensionMismatchPointException
 from typing import List, Union, Self, overload
+import math
 
 class Vector(Point):
     def __init__(self, end_cords: List[float], start_cords: List[float] = None):
-        self.start_point = Point(start_cords) if start_cords != None else Point([0.0] * len(end_cords))
+        self.start_point = Point(start_cords) if start_cords is not None else Point([0.0] * len(end_cords))
         super().__init__([end_cords[i] - self.start_point.values[i] for i in range(len(end_cords))])
         self.end_point = self.start_point + self.point
 
@@ -90,7 +91,7 @@ class Vector(Point):
         return sum(coord**2 for coord in self.values)**0.5
 
     def __str__(self):
-        return f"Vector(({", ".join(map(str, self.start_point.values))}), ({", ".join(map(str, self.end_point.values))}))"
+        return f"Vector[{self.dimension}](({', '.join(map(str, self.start_point.values))}), ({', '.join(map(str, self.end_point.values))}))"
     
     def __eq__(self, point: Point):
         return self.point == point
@@ -137,7 +138,8 @@ class Vector(Point):
             for j in range(i+1, length_1):
                 first = matrix_elements[i]
                 second = matrix_elements[j]
-                if first[0] * second[1] - first[1] * second[0] != 0:
+                det = first[0] * second[1] - first[1] * second[0]
+                if not math.isclose(det, 0, abs_tol=1e-9):
                     return False
                 
         return True
@@ -167,7 +169,7 @@ class Vector(Point):
         if length_1 <= 1:
             return False
         
-        if Vector.scalar_multiply(a, b) == 0:
+        if math.isclose(Vector.scalar_multiply(a, b), 0, abs_tol=1e-9):
             return True
         
         return False

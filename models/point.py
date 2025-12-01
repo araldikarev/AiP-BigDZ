@@ -7,7 +7,7 @@ class Point():
         if not isinstance(values, list):
             raise TypeError("Не удалось создать точку", f"Невозможно создать объект типа \"Point\" с объектом типа {type(values)}")
         
-        if any(not isinstance(element, int) and not isinstance(element, float) for element in values):
+        if any(not isinstance(element, (int, float)) for element in values):
             raise TypeError("Не удалось создать точку", f"Невозможно создать объект типа \"Point\", так как не все элементы списка - числа.")
         self._values = [*values]
     
@@ -46,3 +46,6 @@ class Point():
     
     def __eq__(self, point: "Point"):
         return self.values == point.values
+    
+    def __str__(self):
+        return f"Point[{self.dimension}]({', '.join(map(str, self.values))})"
