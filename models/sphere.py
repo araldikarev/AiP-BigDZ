@@ -1,7 +1,7 @@
 ﻿from models.vector import Vector
 from models.point import Point
 from models.exceptions import DimensionMismatchPointException
-from typing import List, Self
+from typing import List, Self, Union
 import math
 
 class Sphere(Vector):
@@ -24,20 +24,20 @@ class Sphere(Vector):
         """
         Проверяет содержится ли в шаре точка.
 
-        :params point: Точка
+        :param point: Точка
         :type point: Point
         :returns: True, если содержит, иначе - False
         :raises TypeError: Если тип point - не точка.
         :raises DimensionMismatchPointException: Если размерность точки и сферы не совпадает.
         """
         
-        if not isinstance(point, Point):
+        if type(point) is not Point:
             raise TypeError(f"Невозможно проверить содержание объекта типа {type(point)} в шаре")
         if point.dimension != self.start_point.dimension:
-            raise DimensionMismatchPointException("Невозможно проверить contains", "Размерность точки и сферы должны совпадать")
+            raise DimensionMismatchPointException(message="Невозможно проверить contains: размерность точки и сферы должны совпадать")
         distance = Vector.from_points(point, self.start_point).length
         
-        if distance < self.radius or math.isclose(distance, self.radius, abs_tol=1e-9):
+        if distance < self.radius or math.isclose(distance, self.radius, rel_tol=1e-9, abs_tol=1e-9):
             return True
         return False
     
@@ -45,19 +45,19 @@ class Sphere(Vector):
         """
         Проверяет, лежит ли точка на сфере.
 
-        :params point: Точка
+        :param point: Точка
         :type point: Point
         :returns: True, если лежит, иначе - False
         :raises TypeError: Если тип point - не точка.
         :raises DimensionMismatchPointException: Если размерность точки и сферы не совпадает.
         """
 
-        if not isinstance(point, Point):
+        if type(point) is not Point:
             raise TypeError(f"Невозможно проверить принадлежность объекта типа {type(point)} сфере")
         if point.dimension != self.start_point.dimension:
-            raise DimensionMismatchPointException("Невозможно проверить on_sphere", "Размерность точки и сферы должны совпадать")
+            raise DimensionMismatchPointException(message="Невозможно проверить on_sphere: размерность точки и сферы должны совпадать")
         distance = Vector.from_points(point, self.start_point).length
-        if math.isclose(distance, self.radius, abs_tol=1e-9):
+        if math.isclose(distance, self.radius, rel_tol=1e-9, abs_tol=1e-9):
             return True
         return False
     #endregion
@@ -104,32 +104,40 @@ class Sphere(Vector):
     #endregion
 
     #region Блокировка операций
-    __add__ = None
-    __sub__ = None
-    __neg__ = None
-    __abs__ = None
+    def __add__(self, object): 
+        raise TypeError("Операция сложения для Sphere запрещена")
+    def __radd__(self, object): 
+        raise TypeError("Операция сложения для Sphere запрещена")
+    def __sub__(self, object):
+        raise TypeError("Операция вычитания для Sphere запрещена")
+    def __rsub__(self, object):
+        raise TypeError("Операция вычитания для Sphere запрещена")
+    def __neg__(self):
+        raise TypeError("Операция инверсии для Sphere запрещена")
+    def __abs__(self):
+        raise TypeError("Операция модуля для Sphere запрещена")
     #endregion
 
     #region Умножение
-    def __mul__(self, scalar: float) -> Self:
+    def __mul__(self, scalar: Union[int, float]) -> Self:
         """
         Умножение сферы на скаляр.
 
-        :params scalar: Скаляр для умножения
-        :type scalar: float
+        :param scalar: Скаляр для умножения
+        :type scalar: int, float
         :returns: Sphere
         :raises TypeError: Если тип аргумнета не совместим со скаляром.
         """
         if not isinstance(scalar, (int, float)):
-            raise TypeError(f"Невозможно произвести скалярное произведение Сферы на объект типа {type(scalar)}")
+            raise TypeError(f"Невозможно умножить сферу на объект типа {type(scalar)}")
         return super().__mul__(scalar)
     
-    def __rmul__(self, scalar) -> Self:
+    def __rmul__(self, scalar: Union[int, float]) -> Self:
         """
         Умножение сферы на скаляр.
 
-        :params scalar: Скаляр для умножения
-        :type scalar: float
+        :param scalar: Скаляр для умножения
+        :type scalar: int, float
         :returns: Sphere
         :raises TypeError: Если тип аргумнета не совместим со скаляром.
         """
@@ -140,7 +148,7 @@ class Sphere(Vector):
     #region Дополнительные операции
     def __str__(self):
         """
-        Преобразует точку в строку для print.
+        Преобразует сферу в строку для print.
 
         :returns: str
         """
@@ -151,9 +159,12 @@ class Sphere(Vector):
         """
         Сравнивает 2 сферы. True - если начальная точка и радиус совпадают, False - если нет.
 
-        :returns: str
+        :returns: bool
         """
-        return self.start_point == sphere.start_point and math.isclose(self.length, sphere.length, abs_tol=1e-9) 
+        
+        if not isinstance(sphere, Sphere):
+            return False
+        return self.start_point == sphere.start_point and math.isclose(self.length, sphere.length, rel_tol=1e-9, abs_tol=1e-9) 
     #endregion
 
     #region CLS-методы
@@ -169,7 +180,7 @@ class Sphere(Vector):
         :raises DimensionMismatchPointException: Если размер списков не совпадает.
         """
 
-        if not isinstance(vector, Vector):
+        if type(vector) is not Vector:
             raise TypeError(f"Невозможно создать сферу из объекта типа {type(vector)}")
         return cls(vector.end_point.values, vector.start_point.values)
 
@@ -187,12 +198,12 @@ class Sphere(Vector):
         :raises DimensionMismatchPointException: Если размер списков не совпадает.
         """
 
-        if not isinstance(end_point, Point) or not isinstance(start_point, Point):
+        if type(end_point) is not Point or type(start_point) is not Point:
             raise TypeError(f"Невозможно создать сферу из объектов типа ({type(end_point)}, {type(start_point)})")
         return cls(end_point.values, start_point.values)
         
     @classmethod
-    def from_length(cls, length: float, dimension: int) -> "Sphere":
+    def from_length(cls, length: Union[int, float], dimension: int) -> "Sphere":
         """
         Создаёт объект сферы из длины радиуса и размерности.
 
@@ -203,7 +214,10 @@ class Sphere(Vector):
         :returns: Sphere
         :raises ValueError: Если размерность меньше единицы
         """
-
+        if not isinstance(length, (int, float)):
+            raise TypeError("Тип радиуса должен быть числом (int или float)")
+        if not isinstance(dimension, int):
+            raise TypeError("Тип размерности должен быть целочисленным значением")
         if dimension < 1:
             raise ValueError("Размерность должна быть >= 1")
         return cls([0.0] * (dimension - 1) + [float(length)], None)

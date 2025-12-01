@@ -6,8 +6,8 @@ class Point():
         """
         Создаёт объект точки из координат.
 
-        :param end_cords: Координаты точки
-        :type end_cords: List[float]
+        :param values: Координаты точки
+        :type values: List[float]
         :returns: Point
         :raises TypeError: Если тип аргумента - не список координат.
         :raises NullPointException: Если список пустой.
@@ -17,10 +17,10 @@ class Point():
             raise TypeError("Не удалось создать точку", f"Невозможно создать объект типа \"Point\" с объектом типа {type(values)}")
         
         if len(values) == 0:
-            raise NullPointException("Не удалось создать точку", "Невозможно создать точку из 0 координат")
+            raise NullPointException(message="Невозможно создать точку из 0 координат")
 
         if any(not isinstance(element, (int, float)) for element in values):
-            raise TypeError("Не удалось создать точку", f"Невозможно создать объект типа \"Point\", так как не все элементы списка - числа.")
+            raise TypeError("Не удалось создать точку: невозможно создать объект типа \"Point\", так как не все элементы списка - числа.")
         self._values = [*values]
     
     @property
@@ -30,7 +30,7 @@ class Point():
 
         :returns: List[float]
         """
-        return self._values
+        return self._values.copy()
     
     @property
     def dimension(self):
@@ -62,7 +62,7 @@ class Point():
         """
         Сложение точки с точкой/координатами
 
-        :params object: Объект для сложения
+        :param object: Объект для сложения
         :type object: Union["Point", List[float]]
         :returns: Point
         :raises TypeError: Если типы объектов не совместимы с точкой.
@@ -78,14 +78,14 @@ class Point():
 
         length = len(values)
         if length != self.dimension:
-            raise DimensionMismatchPointException("Невозможно провести операцию сложения.", "Невозможно провести операцию сложения из-за несоответствия размерностей.")
+            raise DimensionMismatchPointException(message="Невозможно провести операцию сложения из-за несоответствия размерностей.")
         return self.__class__([self.values[i] + values[i] for i in range(length)])
     
     def __eq__(self, point: "Point"):
         """
         Сравнивает 2 точки. True - если координаты точки совпадают, False - если нет.
 
-        :returns: str
+        :returns: bool
         """
         if not isinstance(point, Point):
             return False

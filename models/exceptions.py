@@ -5,5 +5,5 @@ class NullPointException(Exception):
         super().__init__(expression, message)
 
 class DimensionMismatchPointException(Exception):
-    def __init__(self, expression: str = "Не удалось провести операцию", message: str = "Невозможно провести операцию с векторами разной размерности."):
+    def __init__(self, expression: str = "Ошибка размерности объектов", message: str = "Невозможно провести операцию разной размерности."):
         super().__init__(expression, message)

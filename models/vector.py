@@ -20,7 +20,7 @@ class Vector(Point):
         if not isinstance(end_cords, list) or (start_cords is not None and not isinstance(start_cords, list) ):
             raise TypeError("Невозможно создать вектор не из списка координат.")
         if start_cords is not None and len(start_cords) != len(end_cords):
-            raise DimensionMismatchPointException("Не удалось создать вектор.", "Начальная и конечная точки имеют разную размерность.")
+            raise DimensionMismatchPointException(message="Начальная и конечная точки имеют разную размерность.")
         self.start_point = Point(start_cords) if start_cords is not None else Point([0.0] * len(end_cords))
         super().__init__([end_cords[i] - self.start_point.values[i] for i in range(len(end_cords))])
         self.end_point = self.start_point + self.point
@@ -40,81 +40,85 @@ class Vector(Point):
 
     #region Сложение
     @overload
-    def __add__(self, object: "Point") -> Self:
+    def __add__(self, object: "Vector") -> Self:
         ...
 
     @overload
     def __add__(self, object: List[float]) -> Self:
         ...
         
-    def __add__(self, object: Union["Point", List[float]]) -> Self:
+    def __add__(self, object: Union["Vector", List[float]]) -> Self:
         """
         Сложение вектора с вектором/координатами
 
-        :params object: Объект для сложения
+        :param object: Объект для сложения
         :type object: Union["Point", List[float]]
         :returns: Vector
         :raises TypeError: Если типы объектов не совместимы с точкой.
         :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
         """
-        if isinstance(object, Point):
-            values = object.values
+        if isinstance(object, Vector):
+            start_values = object.start_point.values
+            end_values = object.end_point.values
         elif isinstance(object, list):
-            values = object
+            start_values = object
+            end_values = object
         else:
             raise TypeError(f"Невозможно сложить вектор с объектом типа \"{type(object)}\"")
 
-        length = len(values)
+        length = len(start_values)
         if length != self.dimension:
-            raise DimensionMismatchPointException("Невозможно провести операцию сложения.", "Невозможно провести операцию сложения из-за несоответствия размерностей.")
-        return self.__class__((self.end_point + values).values, self.start_point.values)
+            raise DimensionMismatchPointException(message="Невозможно провести операцию сложения из-за несоответствия размерностей.")
+        return self.__class__([self.end_point.values[i] + end_values[i] for i in range(length)], [self.start_point.values[i] + start_values[i] for i in range(length)])
     #endregion
 
     #region Вычитание
     @overload
-    def __sub__(self, object: Union["Point"]) -> Self:
+    def __sub__(self, object: Union["Vector"]) -> Self:
         ...
 
     @overload
     def __sub__(self, object: List[float]) -> Self:
         ...
     
-    def __sub__(self, object: Union["Point", List[float]]) -> Self:
+    def __sub__(self, object: Union["Vector", List[float]]) -> Self:
         """
         Вычитание вектора/координат из вектора
 
-        :params object: Объект-вычитаемое
+        :param object: Объект-вычитаемое
         :type object: Union["Point", List[float]]
         :returns: Vector
         :raises TypeError: Если типы объектов не совместимы с точкой.
         :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
         """
-        if isinstance(object, Point):
-            values = object.values
+        if isinstance(object, Vector):
+            start_values = object.start_point.values
+            end_values = object.end_point.values
         elif isinstance(object, list):
-            values = object
+            start_values = object
+            end_values = object
         else:
             raise TypeError(f"Невозможно произвести вычитание с вектором и с объектом типа \"{type(object)}\"")
         
-        return self.__add__([-coord for coord in values])
+        return self.__add__(Vector([-coord for coord in end_values], [-coord for coord in start_values]))
     #endregion
 
     #region Умножение
     @overload
-    def __mul__(self, scalar: float) -> Self:
+    def __mul__(self, scalar: Union[int, float]) -> Self:
         ...
 
     @overload
     def __mul__(self, object: "Vector") -> "float":
         ...
 
-    def __mul__(self, object: Union["Vector", float]):
+    def __mul__(self, object: Union["Vector", int, float]):
         """
-        Умножение вектора на скаляр Или Векторное произведение.
+        Умножение вектора на скаляр или скалярное произведение.
 
-        :params object: Объект для умножения
-        :type object: Union["Point", List[float]]
-        :returns: Vector, если объект для умножения вектор, иначе float
+        :param object: Объект для умножения
+        :type object: Union["Vector", float]
+        :returns: float, если объект для умножения вектор, иначе Vector
         :raises TypeError: Если типы объектов не совместимы со скаляром или вектором.
         :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
         """
@@ -128,13 +132,13 @@ class Vector(Point):
         new_end_cords = [self.start_point.values[i] + new_values[i] for i in range(self.dimension)]
         return self.__class__(new_end_cords, self.start_point.values)
     
-    def __rmul__(self, object: Union["Vector", float]) -> Self:
+    def __rmul__(self, object: Union["Vector", int, float]) -> Self:
         """
-        Умножение вектора/скаляра на вектор Или Векторное произведение.
+        Умножение вектора/скаляра на вектор или скалярное произведение.
 
-        :params object: Объект для умножения
-        :type object: Union["Point", List[float]]
-        :returns: Vector, если объект для умножения вектор, иначе float
+        :param object: Объект для умножения
+        :type object: Union["Vector", int, float]
+        :returns: float, если объект для умножения вектор, иначе Vector
         :raises TypeError: Если типы объектов не совместимы со скаляром или вектором.
         :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
         """
@@ -171,8 +175,11 @@ class Vector(Point):
         """
         Сравнивает 2 вектора. True - если координаты сдвига и начальная точка совпадают, False - если нет.
 
-        :returns: str
+        :returns: bool
         """
+        
+        if not isinstance(vector, Vector):
+            return False
         return self.point == vector.point and self.start_point == vector.start_point 
     #endregion
 
@@ -195,7 +202,7 @@ class Vector(Point):
         length_1 = a.dimension
         length_2 = b.dimension
         if length_1 != length_2:
-            raise DimensionMismatchPointException("Невозможно провести операцию скалярного произведения.", "Невозможно провести скалярное произведение из-за несоответствия размерностей.")
+            raise DimensionMismatchPointException(message="Невозможно провести скалярное произведение из-за несоответствия размерностей.")
         
         return sum(a.values[i] * b.values[i] for i in range(length_1))
     
@@ -231,12 +238,12 @@ class Vector(Point):
         :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
         """
         if not isinstance(a, Vector) or not isinstance(b, Vector):
-            raise TypeError(f"Невозможно произвести операцию скалярного умножения объектов типа {(type(a), type(b))}, оба объекты должны быть объектами типа \"Vector\"")
+            raise TypeError(f"Невозможно проверить на коллинеарность объекты типов ({type(a), type(b)}), оба объекты должны быть объектами типа \"Vector\"")
         
         length_1 = a.dimension
         length_2 = b.dimension
         if length_1 != length_2:
-            raise DimensionMismatchPointException("Невозможно проверить на коллинеарность.", "Невозможно проверить векторы на коллинеарность из-за несоответствия размерностей.")
+            raise DimensionMismatchPointException(message="Невозможно проверить векторы на коллинеарность из-за несоответствия размерностей.")
         if length_1 == 1:
             return True
 
@@ -247,7 +254,7 @@ class Vector(Point):
                 first = matrix_elements[i]
                 second = matrix_elements[j]
                 det = first[0] * second[1] - first[1] * second[0]
-                if not math.isclose(det, 0, abs_tol=1e-9):
+                if not math.isclose(det, 0.0, rel_tol=1e-9, abs_tol=1e-9):
                     return False
                 
         return True
@@ -268,16 +275,14 @@ class Vector(Point):
         :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
         """
         if not isinstance(a, Vector) or not isinstance(b, Vector):
-            raise TypeError(f"Невозможно проверить объекты типа {(type(a), type(b))} на ортогональность, оба объекты должны быть объектами типа \"Vector\"")
+            raise TypeError(f"Невозможно проверить объекты типа ({type(a), type(b)}) на ортогональность, оба объекты должны быть объектами типа \"Vector\"")
 
         length_1 = a.dimension
         length_2 = b.dimension
         if length_1 != length_2:
-            raise DimensionMismatchPointException("Невозможно проверить на ортогональность.", "Невозможно проверить векторы на ортогональность из-за несоответствия размерностей.")
-        if length_1 <= 1:
-            return True
+            raise DimensionMismatchPointException(message="Невозможно проверить векторы на ортогональность.")
         
-        if math.isclose(Vector.scalar_multiply(a, b), 0, abs_tol=1e-9):
+        if math.isclose(Vector.scalar_multiply(a, b), 0.0, rel_tol=1e-9, abs_tol=1e-9):
             return True
         
         return False
