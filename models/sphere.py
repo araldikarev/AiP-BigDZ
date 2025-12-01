@@ -6,10 +6,33 @@ import math
 
 class Sphere(Vector):
     def __init__(self, end_cords: List[float], start_cords: List[float] = None):
+        """
+        Создаёт объект сферы из координат точки конца и начала радиус-вектора.
+
+        :param end_cords: Координаты конечной точки
+        :type end_cords: List[float]
+        :param start_cords: Координаты начальной точки (центр сферы)
+        :type start_cords: List[float]
+        :returns: Sphere
+        :raises TypeError: Если типы объектов - не список координат.
+        :raises DimensionMismatchPointException: Если размер списков не совпадает.
+        """
         super().__init__(end_cords, start_cords)
 
     #region Проверки на содержание
     def contains(self, point: Point):
+        """
+        Проверяет содержится ли в шаре точка.
+
+        :params point: Точка
+        :type point: Point
+        :returns: True, если содержит, иначе - False
+        :raises TypeError: Если тип point - не точка.
+        :raises DimensionMismatchPointException: Если размерность точки и сферы не совпадает.
+        """
+        
+        if not isinstance(point, Point):
+            raise TypeError(f"Невозможно проверить содержание объекта типа {type(point)} в шаре")
         if point.dimension != self.start_point.dimension:
             raise DimensionMismatchPointException("Невозможно проверить contains", "Размерность точки и сферы должны совпадать")
         distance = Vector.from_points(point, self.start_point).length
@@ -19,6 +42,18 @@ class Sphere(Vector):
         return False
     
     def on_sphere(self, point: Point):
+        """
+        Проверяет, лежит ли точка на сфере.
+
+        :params point: Точка
+        :type point: Point
+        :returns: True, если лежит, иначе - False
+        :raises TypeError: Если тип point - не точка.
+        :raises DimensionMismatchPointException: Если размерность точки и сферы не совпадает.
+        """
+
+        if not isinstance(point, Point):
+            raise TypeError(f"Невозможно проверить принадлежность объекта типа {type(point)} сфере")
         if point.dimension != self.start_point.dimension:
             raise DimensionMismatchPointException("Невозможно проверить on_sphere", "Размерность точки и сферы должны совпадать")
         distance = Vector.from_points(point, self.start_point).length
@@ -29,15 +64,21 @@ class Sphere(Vector):
     
     #region Свойства сферы
     @property
-    def length(self) -> float: 
+    def length(self) -> float:
+        """Возвращает радиус."""
         return self.radius
 
     @property
     def radius(self) -> float:
+        """Возвращает радиуса через модуль вектора-радиуса."""
         return Vector.abs(self)
 
     def area(self) -> float:
-        """Площадь сферы"""
+        """
+        Вычисляет площадь сферы.
+
+        :returns: float
+        """
         n = self.dimension
         R = self.radius
 
@@ -47,7 +88,11 @@ class Sphere(Vector):
         return (numerator/denominator) * (R ** (n-1))
 
     def volume(self) -> float:
-        """Объём шара"""
+        """
+        Вычисляет объем шара, сопадающего с этой сферой.
+
+        :returns: float
+        """
         n = self.dimension
         R = self.radius
 
@@ -67,33 +112,98 @@ class Sphere(Vector):
 
     #region Умножение
     def __mul__(self, scalar: float) -> Self:
+        """
+        Умножение сферы на скаляр.
+
+        :params scalar: Скаляр для умножения
+        :type scalar: float
+        :returns: Sphere
+        :raises TypeError: Если тип аргумнета не совместим со скаляром.
+        """
         if not isinstance(scalar, (int, float)):
             raise TypeError(f"Невозможно произвести скалярное произведение Сферы на объект типа {type(scalar)}")
         return super().__mul__(scalar)
     
     def __rmul__(self, scalar) -> Self:
+        """
+        Умножение сферы на скаляр.
+
+        :params scalar: Скаляр для умножения
+        :type scalar: float
+        :returns: Sphere
+        :raises TypeError: Если тип аргумнета не совместим со скаляром.
+        """
+
         return self.__mul__(scalar)
     #endregion
 
     #region Дополнительные операции
     def __str__(self):
+        """
+        Преобразует точку в строку для print.
+
+        :returns: str
+        """
+
         return f"Sphere[{self.dimension}](start_point={self.start_point}, radius={self.radius})"
     
     def __eq__(self, sphere: "Sphere"):
-        return self.start_point == sphere.start_point and self.point == sphere.point 
+        """
+        Сравнивает 2 сферы. True - если начальная точка и радиус совпадают, False - если нет.
+
+        :returns: str
+        """
+        return self.start_point == sphere.start_point and math.isclose(self.length, sphere.length, abs_tol=1e-9) 
     #endregion
 
     #region CLS-методы
     @classmethod
     def from_vector(cls, vector: Vector) -> "Sphere":
+        """
+        Создаёт объект сферы из вектора.
+
+        :param vector: Вектор
+        :type vector: Vector
+        :returns: Sphere
+        :raises TypeError: Если тип объекта - не вектор.
+        :raises DimensionMismatchPointException: Если размер списков не совпадает.
+        """
+
+        if not isinstance(vector, Vector):
+            raise TypeError(f"Невозможно создать сферу из объекта типа {type(vector)}")
         return cls(vector.end_point.values, vector.start_point.values)
 
     @classmethod
     def from_points(cls, end_point: Point, start_point: Point) -> "Sphere":
+        """
+        Создаёт объект сферы из 2 точек.
+
+        :param end_point: Точка конца вектора радиуса
+        :type end_point: Point
+        :param start_point: Точка начала вектора радиуса
+        :type start_point: Point
+        :returns: Sphere
+        :raises TypeError: Если типы объектов - не точка.
+        :raises DimensionMismatchPointException: Если размер списков не совпадает.
+        """
+
+        if not isinstance(end_point, Point) or not isinstance(start_point, Point):
+            raise TypeError(f"Невозможно создать сферу из объектов типа ({type(end_point)}, {type(start_point)})")
         return cls(end_point.values, start_point.values)
         
     @classmethod
     def from_length(cls, length: float, dimension: int) -> "Sphere":
+        """
+        Создаёт объект сферы из длины радиуса и размерности.
+
+        :param length: Длина радиуса
+        :type length: float
+        :param dimension: Размерность
+        :type dimension: int
+        :returns: Sphere
+        :raises ValueError: Если размерность меньше единицы
+        """
+
         if dimension < 1:
             raise ValueError("Размерность должна быть >= 1")
         return cls([0.0] * (dimension - 1) + [float(length)], None)

@@ -5,7 +5,19 @@ import math
 
 class Vector(Point):
     def __init__(self, end_cords: List[float], start_cords: List[float] = None):
-        if not isinstance(end_cords, list):
+        """
+        Создаёт объект вектора из координат.
+
+        :param end_cords: Координаты конечной точки
+        :type end_cords: List[float]
+        :param start_cords: Координаты начальной точки
+        :type start_cords: List[float]
+        :returns: Vector
+        :raises TypeError: Если типы объектов - не список координат.
+        :raises DimensionMismatchPointException: Если размер списков не совпадает.
+        """
+
+        if not isinstance(end_cords, list) or (start_cords is not None and not isinstance(start_cords, list) ):
             raise TypeError("Невозможно создать вектор не из списка координат.")
         if start_cords is not None and len(start_cords) != len(end_cords):
             raise DimensionMismatchPointException("Не удалось создать вектор.", "Начальная и конечная точки имеют разную размерность.")
@@ -15,9 +27,15 @@ class Vector(Point):
 
     @property
     def length(self):
+        """
+        Длина вектора (модуль вектора).
+        """
         return abs(self)
     
     def is_radius_vector(self):
+        """
+        Проверяет, является ли вектор радиус-вектором (начало в нулевой координате).
+        """
         return True if self.start_point.values == [0.0] * self.dimension else False
 
     #region Сложение
@@ -30,6 +48,15 @@ class Vector(Point):
         ...
         
     def __add__(self, object: Union["Point", List[float]]) -> Self:
+        """
+        Сложение вектора с вектором/координатами
+
+        :params object: Объект для сложения
+        :type object: Union["Point", List[float]]
+        :returns: Vector
+        :raises TypeError: Если типы объектов не совместимы с точкой.
+        :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
+        """
         if isinstance(object, Point):
             values = object.values
         elif isinstance(object, list):
@@ -53,6 +80,15 @@ class Vector(Point):
         ...
     
     def __sub__(self, object: Union["Point", List[float]]) -> Self:
+        """
+        Вычитание вектора/координат из вектора
+
+        :params object: Объект-вычитаемое
+        :type object: Union["Point", List[float]]
+        :returns: Vector
+        :raises TypeError: Если типы объектов не совместимы с точкой.
+        :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
+        """
         if isinstance(object, Point):
             values = object.values
         elif isinstance(object, list):
@@ -73,6 +109,15 @@ class Vector(Point):
         ...
 
     def __mul__(self, object: Union["Vector", float]):
+        """
+        Умножение вектора на скаляр Или Векторное произведение.
+
+        :params object: Объект для умножения
+        :type object: Union["Point", List[float]]
+        :returns: Vector, если объект для умножения вектор, иначе float
+        :raises TypeError: Если типы объектов не совместимы со скаляром или вектором.
+        :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
+        """
         if isinstance(object, Vector):
             return Vector.scalar_multiply(self, object)
         elif not isinstance(object, (int, float)):
@@ -83,28 +128,68 @@ class Vector(Point):
         new_end_cords = [self.start_point.values[i] + new_values[i] for i in range(self.dimension)]
         return self.__class__(new_end_cords, self.start_point.values)
     
-    def __rmul__(self, scalar: Union[int, float]) -> Self:
-        return self.__mul__(scalar)
+    def __rmul__(self, object: Union["Vector", float]) -> Self:
+        """
+        Умножение вектора/скаляра на вектор Или Векторное произведение.
+
+        :params object: Объект для умножения
+        :type object: Union["Point", List[float]]
+        :returns: Vector, если объект для умножения вектор, иначе float
+        :raises TypeError: Если типы объектов не совместимы со скаляром или вектором.
+        :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
+        """
+        return self.__mul__(object)
     #endregion
 
     #region Дополнительные операции
     def __neg__(self):
+        """
+        Возвращает развернутый вокруг точки вектор.
+
+        :returns: Vector
+        """
         new_end_cords = [self.start_point.values[i] - self.values[i] for i in range(self.dimension)]
-        return Vector(new_end_cords, self.start_point.values)
+        return self.__class__(new_end_cords, self.start_point.values)
     
     def __abs__(self) -> float:
+        """
+        Возвращает модуль вектора (его длину)
+
+        :returns: float
+        """
         return sum(coord**2 for coord in self.values)**0.5
 
     def __str__(self):
+        """
+        Преобразует вектор в строку для print.
+
+        :returns: str
+        """
         return f"Vector[{self.dimension}](({', '.join(map(str, self.start_point.values))}), ({', '.join(map(str, self.end_point.values))}))"
     
-    def __eq__(self, point: Point):
-        return self.point == point
+    def __eq__(self, vector: "Vector"):
+        """
+        Сравнивает 2 вектора. True - если координаты сдвига и начальная точка совпадают, False - если нет.
+
+        :returns: str
+        """
+        return self.point == vector.point and self.start_point == vector.start_point 
     #endregion
 
     #region Статические методы
     @staticmethod
     def scalar_multiply(a: "Vector", b: "Vector"):
+        """
+        Скалярное произведение векторов.
+
+        :param a: Первый вектор
+        :type a: Vector
+        :param b: Второй вектор
+        :type b: Vector
+        :returns: float
+        :raises TypeError: Если типы объектов - не Вектор.
+        :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
+        """
         if not isinstance(a, Vector) or not isinstance(b, Vector):
             raise TypeError("Невозможно произвести операцию скалярного умножения без объекта типа Vector")
         length_1 = a.dimension
@@ -117,6 +202,17 @@ class Vector(Point):
 
     @staticmethod
     def abs(vector: "Vector"):
+        """
+        Вычисляет модуль вектора (его длину).
+
+        :param vector: Вектор
+        :type vector: Vector
+        :returns: float
+        :raises TypeError: Если типы объектов - не Вектор.
+        :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
+        """
+        if not isinstance(vector, Vector):
+            raise TypeError(f"Невозможно получить модуль вектора из объекта типа {type(vector)}")
         return sum(coord**2 for coord in vector.values)**0.5
     
     @staticmethod
@@ -126,6 +222,13 @@ class Vector(Point):
         
         Если все ранги матрицы 2xN = 0, то векторы коллинеарны
         
+        :param a: Первый вектор
+        :type a: Vector
+        :param b: Второй вектор
+        :type b: Vector
+        :returns: True - если векторы коллинеарны, иначе - False
+        :raises TypeError: Если типы объектов - не Вектор.
+        :raises DimensionMismatchPointException: Если размерность векторов не совпадает.
         """
         if not isinstance(a, Vector) or not isinstance(b, Vector):
             raise TypeError(f"Невозможно произвести операцию скалярного умножения объектов типа {(type(a), type(b))}, оба объекты должны быть объектами типа \"Vector\"")
@@ -184,9 +287,34 @@ class Vector(Point):
     #region CLS-методы
     @classmethod
     def from_point(cls, point: Point) -> "Vector":
+        """
+        Создаёт объект вектора (радиус-вектора) из точки.
+
+        :param point: Точка
+        :type point: Point
+        :returns: Vector
+        :raises TypeError: Если типы объектов - не точка.
+        :raises DimensionMismatchPointException: Если размер списков не совпадает.
+        """
+        if not isinstance(point, Point):
+            raise TypeError(f"Невозможно создать объект вектора из объекта типа {type(point)}")
         return cls(point.values)
     
     @classmethod
-    def from_points(cls, start_point: Point, end_point: Point) -> "Vector":
+    def from_points(cls, end_point: Point, start_point: Point) -> "Vector":
+        """
+        Создаёт объект вектора из 2 точек.
+
+        :param end_point: Точка конца вектора
+        :type end_point: Point
+        :param start_point: Точка начала вектора
+        :type start_point: Point
+        :returns: Vector
+        :raises TypeError: Если типы объектов - не точка.
+        :raises DimensionMismatchPointException: Если размер списков не совпадает.
+        """
+        
+        if not isinstance(end_point, Point) or not isinstance(start_point, Point):
+            raise TypeError(f"Невозможно создать объект вектора из объектов типа ({type(end_point)}, {type(start_point)})")
         return cls(end_point.values, start_point.values) 
     #endregion

@@ -43,25 +43,20 @@ if __name__ == "__main__":
     point_c = Point([7, 7, 7])
     point_d = Point([12, 12, 12])
 
-    print(f"Точка a: {point_a}")
-    print(f"Точка b: {point_b}")
-    print(f"Точка c: {point_c}")
-    print(f"Точка d: {point_d}")
+    print(f"Точка a: {point_a}\n")
+    print(f"Точка b: {point_b}\n")
+    print(f"Точка c: {point_c}\n")
+    print(f"Точка d: {point_d}\n")
 
-    vector_ab = Vector.from_points(point_b, point_a)
-    print(f"Вектор из точек a и b: {vector_ab}")
+    vector_ab = Vector.from_points(point_a, point_b)
+    print(f"Вектор из точек a и b: {vector_ab}\n")
     
     sphere = Sphere.from_vector(vector_ab)
 
-    print(f"Сфера из вектора ab: {sphere}")
-    print(f"Принадлежит ли точка {point_c} шару: {sphere.contains(point_c)}")
-    print(f"Принадлежит ли точка {point_d} шару: {sphere.contains(point_d)}")
-    print(f"Принадлежит ли точка {point_c} сфере: {sphere.on_sphere(point_c)}")
-    print(f"Принадлежит ли точка {point_d} сфере: {sphere.on_sphere(point_d)}")
-    print(f"Принадлежит ли точка {point_a} сфере: {sphere.on_sphere(point_a)}")
-    print(f"Принадлежит ли точка {point_b} сфере: {sphere.on_sphere(point_b)}")
-
-
-
-
-    
+    print(f"Сфера из вектора ab: {sphere}\n")
+    print(f"Принадлежит ли точка {point_c} шару: {sphere.contains(point_c)}\n")
+    print(f"Принадлежит ли точка {point_d} шару: {sphere.contains(point_d)}\n")
+    print(f"Принадлежит ли точка {point_c} сфере: {sphere.on_sphere(point_c)}\n")
+    print(f"Принадлежит ли точка {point_d} сфере: {sphere.on_sphere(point_d)}\n")
+    print(f"Принадлежит ли точка {point_a} сфере: {sphere.on_sphere(point_a)}\n")
+    print(f"Принадлежит ли точка {point_b} сфере: {sphere.on_sphere(point_b)}\n")
