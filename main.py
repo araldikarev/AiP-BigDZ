@@ -51,7 +51,7 @@ if __name__ == "__main__":
     vector_ab = Vector.from_points(point_b, point_a)
     print(f"Вектор из точек a и b: {vector_ab}")
     
-    sphere = Sphere(vector_ab)
+    sphere = Sphere.from_vector(vector_ab)
 
     print(f"Сфера из вектора ab: {sphere}")
     print(f"Принадлежит ли точка {point_c} шару: {sphere.contains(point_c)}")

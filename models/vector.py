@@ -5,6 +5,10 @@ import math
 
 class Vector(Point):
     def __init__(self, end_cords: List[float], start_cords: List[float] = None):
+        if not isinstance(end_cords, list):
+            raise TypeError("Невозможно создать вектор не из списка координат.")
+        if start_cords is not None and len(start_cords) != len(end_cords):
+            raise DimensionMismatchPointException("Не удалось создать вектор.", "Начальная и конечная точки имеют разную размерность.")
         self.start_point = Point(start_cords) if start_cords is not None else Point([0.0] * len(end_cords))
         super().__init__([end_cords[i] - self.start_point.values[i] for i in range(len(end_cords))])
         self.end_point = self.start_point + self.point
@@ -85,7 +89,8 @@ class Vector(Point):
 
     #region Дополнительные операции
     def __neg__(self):
-        return Vector([-coord for coord in self.values])
+        new_end_cords = [self.start_point.values[i] - self.values[i] for i in range(self.dimension)]
+        return Vector(new_end_cords, self.start_point.values)
     
     def __abs__(self) -> float:
         return sum(coord**2 for coord in self.values)**0.5
@@ -105,7 +110,7 @@ class Vector(Point):
         length_1 = a.dimension
         length_2 = b.dimension
         if length_1 != length_2:
-            raise DimensionMismatchPointException("Невозможно провести операцию скалярного произведения.", "Невозможно провести скалярного произведения из-за несоответствия размерностей.")
+            raise DimensionMismatchPointException("Невозможно провести операцию скалярного произведения.", "Невозможно провести скалярное произведение из-за несоответствия размерностей.")
         
         return sum(a.values[i] * b.values[i] for i in range(length_1))
     
@@ -129,7 +134,7 @@ class Vector(Point):
         length_2 = b.dimension
         if length_1 != length_2:
             raise DimensionMismatchPointException("Невозможно проверить на коллинеарность.", "Невозможно проверить векторы на коллинеарность из-за несоответствия размерностей.")
-        if length_1 <= 1:
+        if length_1 == 1:
             return True
 
 
@@ -167,7 +172,7 @@ class Vector(Point):
         if length_1 != length_2:
             raise DimensionMismatchPointException("Невозможно проверить на ортогональность.", "Невозможно проверить векторы на ортогональность из-за несоответствия размерностей.")
         if length_1 <= 1:
-            return False
+            return True
         
         if math.isclose(Vector.scalar_multiply(a, b), 0, abs_tol=1e-9):
             return True
